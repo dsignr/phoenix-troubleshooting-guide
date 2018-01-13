@@ -30,3 +30,14 @@ def create(conn, %{"city" => city_params}) do
     end
 end
 ```
+
+**2. Problem:** You get an error that says: ```invalid association :user. When using the :through option, the schema should not be passed as second argument```
+
+**Solution:** This simply means that somewhere in your model, you're doing something like:
+```elixir
+has_one :user, Accounts.User, through: [:user_address, :user]
+```
+Instead, it should be:
+```elixir
+has_one :user, through: [:user_address, :user]
+```
