@@ -58,3 +58,14 @@ The problem is, your route doesn't have anywhere to capture the ID from the `@cu
 ```elixir
 get "/account/:id/edit", UserController, :edit
 ```
+## Ecto
+### Querying
+
+**1. Problem:** You get an error that says: ```cannot use ^some_id outside of match clauses```
+
+**Solution:**  This means you're trying to use Ecto's querying syntax such as `from x in SomeStruct` inside your module without importing Ecto.Query first. Include these lines:
+
+```elixir
+import Ecto.Query, warn: false
+import Ecto.Changeset
+```
