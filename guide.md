@@ -69,3 +69,9 @@ get "/account/:id/edit", UserController, :edit
 import Ecto.Query, warn: false
 import Ecto.Changeset
 ```
+## Changesets
+### Forms
+
+**1. Problem:** Your changeset errors aren't showing up.  ```form.errors is nil or []. Phoenix.HTML.Form does not take errors from changeset```
+**Solution:** 
+1. Inspect the form object (usually `f`). Check if `f.errors` has a non-empty array. If it is non-empty, it is very likely something to do with your error helpers. Check them in `views/error_helpers`. If the array is empty, then check the `form_for` tag. You may be passing a `@conn` object instead of `@changeset`.
