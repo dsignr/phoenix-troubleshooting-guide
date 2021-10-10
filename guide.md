@@ -75,3 +75,11 @@ import Ecto.Changeset
 **1. Problem:** Your changeset errors aren't showing up.  ```form.errors is nil or []. Phoenix.HTML.Form does not take errors from changeset```
 **Solution:** 
 1. Inspect the form object (usually `f`). Check if `f.errors` has a non-empty array. If it is non-empty, it is very likely something to do with your error helpers. Check them in `views/error_helpers`. If the array is empty, then check the `form_for` tag. You may be passing a `@conn` object instead of `@changeset`.
+
+## LiveView
+**1. Problem:** Your application page keeps refreshing in production, but not on local. Your socket connections aren't working or are throwing errors.  ```Firefox can’t establish a connection to the server at wss://example.com/live/websocket?_csrf_token=AW8fZ2IsfQE5BCMyHSBBAkEeXDA-RmIs5Zp3RyDOpkAxOyx75QoUm35A&_track_static%5B0%5D=https%3A%2F%2Fexample.com%2Fcss%2Fapp-13404a0906796b323ae87ffa39743021.css%3Fvsn%3Dd&_track_static%5B1%5D=https%3A%2F%2Fexample.com%2Fjs%2Fapp-6483dc03ab95788286683ef9acb37e34.js%3Fvsn%3Dd&_mounts=0&vsn=2.0.0.```
+**Solution:** 
+This could happen due to many reasons. Here's the plan of attack:
+1) Are you running a dockerized setup? If yes, run the docker container locally to see if sockets are able to connect locally. If not, then you will see the exact error that's causing this in the terminal.
+2) Are you running on a serverless cloud environment like Google Cloud Run or AppEngine? These may have some limitations w.r.t websockets. Check their documentation. Check if a load balancer is blocking out connections, and disable it if so temporarily to debug.
+3) Check your config files. Particularly, ensure `check_origin` has an array of allowed origins set correctly. Almost always, this is the cause.
