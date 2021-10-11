@@ -82,4 +82,5 @@ import Ecto.Changeset
 This could happen due to many reasons. Here's the plan of attack:
 1) Are you running a dockerized setup? If yes, run the docker container locally to see if sockets are able to connect locally. If not, then you will see the exact error that's causing this in the terminal.
 2) Are you running on a serverless cloud environment like Google Cloud Run or AppEngine? These may have some limitations w.r.t websockets. Check their documentation. Check if a load balancer is blocking out connections, and disable it if so temporarily to debug.
-3) Check your config files. Particularly, ensure `check_origin` has an array of allowed origins set correctly. Almost always, this is the cause.
+    2.1) Cloud Run - Disable HTTP/2 support in settings to see if it fixes your issue.
+4) Check your config files (`config.exs` and `config/prod.exs`). Particularly, ensure `check_origin` has an array of allowed origins set correctly. Almost always, this is the cause. 
