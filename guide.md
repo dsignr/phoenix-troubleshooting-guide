@@ -76,6 +76,114 @@ import Ecto.Changeset
 **Solution:** 
 1. Inspect the form object (usually `f`). Check if `f.errors` has a non-empty array. If it is non-empty, it is very likely something to do with your error helpers. Check them in `views/error_helpers`. If the array is empty, then check the `form_for` tag. You may be passing a `@conn` object instead of `@changeset`.
 
+### Nested forms
+When you need to have a form that needs to allow both adding of existing entries from database as well as creating new ones from the same form, use the logic below to avoid creating / overwriting (replace) new entries everytime the parent is updated.
+
+Post -> has_many `tags` through `post_tags`
+PostTag -> belongs_to `tags`, also allows casting for tags `cast_assoc(:tags)`
+
+Form -> contains `inputs_for` for `post_tags`
+and `post_tags` contains `inputs_for` for `tags`
+
+```
+%{
+  "content" => "",
+  "excerpt" => "awdawdwdawda",
+  "post_categories" => %{
+    "0" => %{
+      "category_id" => "1",
+      "name" => "Politics",
+      "post_id" => "",
+      "slug" => "politics"
+    }
+  },
+  "post_tags" => %{
+    "0" => %{
+      "post_id" => "", #ignored
+      "tag" => %{"id" => "3", "name" => "asdf", "slug" => "asdf"}, #takes precedence
+      "tag_id" => "3" #ignored
+    }
+  },
+  "published" => "false",
+  "published_at" => %{
+    "day" => "17",
+    "hour" => "17",
+    "minute" => "2",
+    "month" => "12",
+    "year" => "2022"
+  },
+  "slug" => "awdwdawad",
+  "title" => "wdaddwawdada"
+}
+```
+The above will actually create a new tag and will error out if (and most likely will) a tag with the same ID already exists in the database. The changeset action here will be `insert`.
+
+What you need to do - if you wish to associate an existing `Tag` to the `Post`:
+
+```
+%{
+  "content" => "",
+  "excerpt" => "awdawdwdawda",
+  "post_categories" => %{
+    "0" => %{
+      "category_id" => "1",
+      "name" => "Politics",
+      "post_id" => "",
+      "slug" => "politics"
+    }
+  },
+  "post_tags" => %{
+    "0" => %{
+      "post_id" => "", #optional
+      "tag_id" => "3"
+    }
+  },
+  "published" => "false",
+  "published_at" => %{
+    "day" => "17",
+    "hour" => "17",
+    "minute" => "2",
+    "month" => "12",
+    "year" => "2022"
+  },
+  "slug" => "awdwdawad",
+  "title" => "wdaddwawdada"
+}
+```
+This will ensure you create the join association `PostTag` and not the `Tag` itself.
+
+If you however wish to create a new `Tag` then you would do:
+```
+%{
+  "content" => "",
+  "excerpt" => "awdawdwdawda",
+  "post_categories" => %{
+    "0" => %{
+      "category_id" => "1",
+      "name" => "Politics",
+      "post_id" => "",
+      "slug" => "politics"
+    }
+  },
+  "post_tags" => %{
+    "0" => %{
+      "tag" => %{"name" => "asdf", "slug" => "asdf"},
+    }
+  },
+  "published" => "false",
+  "published_at" => %{
+    "day" => "17",
+    "hour" => "17",
+    "minute" => "2",
+    "month" => "12",
+    "year" => "2022"
+  },
+  "slug" => "awdwdawad",
+  "title" => "wdaddwawdada"
+}
+```
+Make sure you don't cast `id`. That's it.
+
 ## LiveView
 **1. Problem:** Your application page keeps refreshing in production, but not on local. Your socket connections aren't working or are throwing errors.  ```Firefox can’t establish a connection to the server at wss://example.com/live/websocket?_csrf_token=AW8fZ2IsfQE5BCMyHSBBAkEeXDA-RmIs5Zp3RyDOpkAxOyx75QoUm35A&_track_static%5B0%5D=https%3A%2F%2Fexample.com%2Fcss%2Fapp-13404a0906796b323ae87ffa39743021.css%3Fvsn%3Dd&_track_static%5B1%5D=https%3A%2F%2Fexample.com%2Fjs%2Fapp-6483dc03ab95788286683ef9acb37e34.js%3Fvsn%3Dd&_mounts=0&vsn=2.0.0.```
 **Solution:** 
