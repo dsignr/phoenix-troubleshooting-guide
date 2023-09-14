@@ -213,8 +213,8 @@ Pass a stringified array in params:
 ```
 form[virtual_field] => "[1,2,3]"
 ```
-Cast the changeset for changes
-```
+Cast the changeset for changes and validate the string:
+```elixir
 model_changeset
 |> cast(...)
 |> validate_virtual_field()
