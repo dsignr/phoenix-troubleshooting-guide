@@ -184,6 +184,48 @@ If you however wish to create a new `Tag` then you would do:
 ```
 Make sure you don't cast `id`. That's it.
 
+## Accept arrays in API
+There are two methods to do this. 
+1. Given a model like below:
+```elixir
+defmodule Model do
+    field :some_array, {:array, :integer}
+end
+```
+Then. you are able to pass params like this:
+```
+form[]some_array = 1
+form[]some_array = 2
+form[]some_array = 3
+```
+This will be seen in the backend as:
+```
+form[some_array] => [1,2,3]
+```
+2. The other way is to create a virtual field:
+```elixir
+defmodule Model do
+    field :virtual_field, :string. virtual: true
+    field :some_array, {:array, :integer}
+end
+```
+Pass a stringified array in params:
+```
+form[virtual_field] => "[1,2,3]"
+```
+Cast the changeset for changes
+```
+model_changeset
+|> cast(...)
+|> validate_virtual_field()
+
+defp validate_virtual_field() do
+    <check with regex>
+    <add to the original some_array field using Enum.map>
+    <add_error or do put_change>
+end
+```
+
 ## LiveView
 **1. Problem:** Your application page keeps refreshing in production, but not on local. Your socket connections aren't working or are throwing errors.  ```Firefox can’t establish a connection to the server at wss://example.com/live/websocket?_csrf_token=AW8fZ2IsfQE5BCMyHSBBAkEeXDA-RmIs5Zp3RyDOpkAxOyx75QoUm35A&_track_static%5B0%5D=https%3A%2F%2Fexample.com%2Fcss%2Fapp-13404a0906796b323ae87ffa39743021.css%3Fvsn%3Dd&_track_static%5B1%5D=https%3A%2F%2Fexample.com%2Fjs%2Fapp-6483dc03ab95788286683ef9acb37e34.js%3Fvsn%3Dd&_mounts=0&vsn=2.0.0.```
 **Solution:** 
