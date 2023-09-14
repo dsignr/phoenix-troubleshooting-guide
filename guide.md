@@ -227,32 +227,45 @@ end
 ```
 Here is an example implementation that accepts a list of tagged user IDs in a social network backend:
 ```elixir
-  defp set_tagged_users(%Ecto.Changeset{changes: %{
+    schema "content_posts" do
+        field :tagged, :string, virtual: true
+        field :tagged_users, {:array, :integer}, default: []
+    end
+
+    def upload_changeset(post, attrs) do
+        post
+        |> cast(attrs, [:file, :image_url, :description, :tagged])
+        |> validate_required([:description])
+        |> validate_and_upload()
+        |> set_tagged_users()
+    end
+
+    defp set_tagged_users(%Ecto.Changeset{changes: %{
     tagged: tagged
-  }} = changeset) do
-    valid? = tagged
-    |> String.replace(" ", "")
-    |> String.match?(~r/\[(\d?\,)*(\d)*\]/)
-
-    ids = if valid? do
-      tagged
-      |> String.replace(" ", "")
-      |> String.replace("[", "")
-      |> String.replace("]", "")
-      |> String.split(",")
-      |> Enum.map(&String.to_integer/1)
-    else
-      []
+    }} = changeset) do
+        valid? = tagged
+        |> String.replace(" ", "")
+        |> String.match?(~r/\[(\d?\,)*(\d)*\]/)
+        
+        ids = if valid? do
+          tagged
+          |> String.replace(" ", "")
+          |> String.replace("[", "")
+          |> String.replace("]", "")
+          |> String.split(",")
+          |> Enum.map(&String.to_integer/1)
+        else
+          []
+        end
+        
+        if valid? do
+          changeset
+          |> put_change(:tagged_users, ids)
+        else
+          changeset
+          |> add_error(:tagged, "Invalid tagged users format")
+        end
     end
-
-    if valid? do
-      changeset
-      |> put_change(:tagged_users, ids)
-    else
-      changeset
-      |> add_error(:tagged, "Invalid tagged users format")
-    end
-  end
 ```
 
 ## LiveView
