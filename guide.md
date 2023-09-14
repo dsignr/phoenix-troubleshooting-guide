@@ -220,10 +220,39 @@ model_changeset
 |> validate_virtual_field()
 
 defp validate_virtual_field() do
-    <check with regex>
-    <add to the original some_array field using Enum.map>
-    <add_error or do put_change>
+    # <check with regex>
+    # <add to the original some_array field using Enum.map>
+    # <add_error or do put_change>
 end
+```
+Here is an example implementation that accepts a list of tagged user IDs in a social network backend:
+```elixir
+  defp set_tagged_users(%Ecto.Changeset{changes: %{
+    tagged: tagged
+  }} = changeset) do
+    valid? = tagged
+    |> String.replace(" ", "")
+    |> String.match?(~r/\[(\d?\,)*(\d)*\]/)
+
+    ids = if valid? do
+      tagged
+      |> String.replace(" ", "")
+      |> String.replace("[", "")
+      |> String.replace("]", "")
+      |> String.split(",")
+      |> Enum.map(&String.to_integer/1)
+    else
+      []
+    end
+
+    if valid? do
+      changeset
+      |> put_change(:tagged_users, ids)
+    else
+      changeset
+      |> add_error(:tagged, "Invalid tagged users format")
+    end
+  end
 ```
 
 ## LiveView
