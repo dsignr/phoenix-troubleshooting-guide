@@ -1,4 +1,11 @@
 # LiveView Troubleshooting Guide
+## Non-streams
+
+### Inserts
+1. If your element insertion isn't working correctly, check if you've mistakenly added `phx-update="stream"` in the parent.
+2. Check if you have a unique ID on each iterated element.
+
+
 ## Streams
 
 ## Stream Insert
